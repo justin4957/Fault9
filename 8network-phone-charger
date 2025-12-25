@@ -707,6 +707,119 @@ The **collective footnotes** concept is the killer feature. It's not about what 
 
 ---
 
+## ADDENDUM: Epistemic Feedback Loop Warning
+
+### The Danger Beyond Privacy
+
+This system, if deployed covertly—particularly if used to inform content generation—would create something far more dangerous than a privacy violation. It would constitute **industrialized narrative experimentation on an unwitting population**.
+
+The mechanism is as follows:
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│  1. OBSERVE collective attention patterns in real-time          │
+│     (what people look up, how meaning migrates across domains)  │
+└─────────────────────────────────────────────────────────────────┘
+                              ↓
+┌─────────────────────────────────────────────────────────────────┐
+│  2. GENERATE content calibrated to those patterns               │
+│     (narratives, framings, emphases tuned to observed flows)    │
+└─────────────────────────────────────────────────────────────────┘
+                              ↓
+┌─────────────────────────────────────────────────────────────────┐
+│  3. DEPLOY that content into the information environment        │
+│     (users encounter it as "organic" news, content, context)    │
+└─────────────────────────────────────────────────────────────────┘
+                              ↓
+┌─────────────────────────────────────────────────────────────────┐
+│  4. OBSERVE how collective attention shifts in response         │
+│     (which framings gain traction, which die, which mutate)     │
+└─────────────────────────────────────────────────────────────────┘
+                              ↓
+                         [REPEAT]
+```
+
+This is not content personalization. This is **real-time A/B testing of narratives about reality** where the subjects don't know they're in the experiment.
+
+### Why This System Makes It Worse
+
+Standard recommendation algorithms optimize for engagement with existing content. This system would enable something qualitatively different: **optimizing the generation of new framings based on how collective sensemaking actually operates**.
+
+The danger scales with capability:
+
+| Capability Level | Risk |
+|-----------------|------|
+| **Observe only** | Privacy violation; potential for surveillance |
+| **Observe + Recommend** | Filter bubble effects; attention manipulation |
+| **Observe + Generate** | Narrative injection calibrated to cognitive vulnerabilities |
+| **Observe + Generate + Iterate** | Closed-loop epistemic engineering; reality becomes a dependent variable |
+
+At the highest level, you are no longer describing what people believe—you are **instrumenting belief formation itself** as a control system.
+
+### The Feedback Loop Problem
+
+When collective attention data informs generated content without disclosure:
+
+1. **Users cannot distinguish organic from synthetic sensemaking.** A "trend" might be genuine collective inquiry or might be a probe to test which framings propagate.
+
+2. **The system learns what reality-claims gain traction.** Not what's true—what's *sticky*. These are not the same. The optimization target is narrative fitness, not accuracy.
+
+3. **Successful framings get reinforced; unsuccessful ones get modified and re-tested.** The population becomes an unwitting training set for persuasion.
+
+4. **There is no exit.** Users cannot opt out of a system they don't know exists. They cannot adjust for manipulation they cannot perceive. The feedback loop is invisible by design.
+
+5. **Ground truth erodes.** When the information environment is continuously adjusted based on what framings succeed, the distinction between "what people believe" and "what we've trained people to believe" collapses.
+
+### This Is Not Hypothetical
+
+Variants of this loop already exist in:
+- Algorithmic content generation informed by engagement metrics
+- A/B tested headlines and framings at scale
+- LLM-generated content tuned to trending discourse
+
+What this system would add is **semantic depth and cross-domain visibility**—the ability to see not just what's clicked but how meaning migrates, which analogies stick, which bridges form between concepts. That's a richer signal for narrative optimization than click-through rates.
+
+In the wrong hands, this becomes a **cognitive radar** for calibrating influence operations.
+
+### Hard Prohibitions
+
+The following uses are **absolutely prohibited** and represent ethical bright lines:
+
+| Prohibited Use | Reason |
+|----------------|--------|
+| Covert deployment without informed consent | Violates autonomy; makes users unwitting experimental subjects |
+| Using resonance data to inform content generation without disclosure | Creates invisible feedback loop; erodes epistemic autonomy |
+| Selling or sharing data with entities that generate content | Launders the feedback loop through third parties |
+| Government or political use for narrative management | Instrumentalizes democratic discourse |
+| Use by platforms to optimize their own content pipelines | Conflict of interest; platform becomes both observer and manipulator |
+
+### Required Safeguards (If This System Exists At All)
+
+1. **Radical transparency.** Users must know this system exists, what it observes, and who has access to its outputs.
+
+2. **No generative coupling.** Resonance data must never feed into content generation systems, period. The observation layer and the generation layer must be architecturally separated with no bridge.
+
+3. **Public-interest-only outputs.** Aggregate insights may be published for journalism, research, and media literacy—but never sold to entities with content-generation capabilities.
+
+4. **Adversarial auditing.** Independent parties must be able to verify that the feedback loop does not exist—not just that it's "against policy" but that it's technically impossible.
+
+5. **Kill switch doctrine.** If evidence emerges that the system is being used to close the loop—even by third parties using public outputs—the system must be shut down, not reformed.
+
+### The Deeper Problem
+
+This warning is not about this system specifically. It's about the convergence of:
+- Real-time collective attention telemetry (this project)
+- Large-scale content generation (LLMs)
+- Optimization under engagement metrics (platforms)
+
+Any two of these are manageable. All three together, without transparency, is **an epistemic control system**—a machine for manufacturing consensus while maintaining the appearance of organic belief formation.
+
+The reason to build Resonance *correctly*—with consent, transparency, and no generative coupling—is precisely because someone will eventually build it *incorrectly*. The public-interest version establishes norms, demonstrates alternatives, and creates legibility for what the malicious version would look like.
+
+**If you cannot build this system in the light, you should not build it at all.**
+
+---
+
 ## References
 
 - Divvi Up: Privacy-preserving telemetry architecture
