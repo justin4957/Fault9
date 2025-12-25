@@ -1,0 +1,419 @@
+# Resonance: Collective Attention Telemetry
+
+## Vision
+
+Resonance is an instrument for observing how meaning forms collectively across media boundaries in real time. It detects when independent users exhibit correlated semantic behavior within shared temporal windows, surfacing those correlations as meaningful context without surveillance or individualized profiling.
+
+This is not a recommendation engine, social feed, or sentiment analyzer. It is a **semantic resonance detector**—a real-time map of distributed cognition.
+
+---
+
+## Core Concepts
+
+### Resonance Event
+
+A Resonance Event is formally defined as a tuple:
+
+```
+R = (T, U, D, S, Δ)
+```
+
+| Component | Definition |
+|-----------|------------|
+| **T** | Time window (sliding: 60s, 5min, 30min) |
+| **U** | Number of distinct anonymous users |
+| **D** | Distinct domains/content types involved |
+| **S** | Semantic cluster in embedding space |
+| **Δ** | Deviation from historical baseline for this pattern |
+
+This allows us to measure:
+- **Resonance bandwidth**: how many distinct domains and behaviors are involved
+- **Resonance amplitude**: how far from baseline
+- **Resonance trajectory**: how the cluster moves through semantic space over time
+
+### Epistemic Registers
+
+Events are classified across parallel interpretive layers:
+
+| Register | Indicators |
+|----------|------------|
+| **Expert sensemaking** | GitHub, arXiv, standards docs, specialized forums |
+| **Consumerization** | Shopping, TikTok, mainstream news, short-form video |
+| **Governance/Legal** | Regulations, legal analysis, policy documents |
+| **Primary sources** | Academic papers, official statements, raw data |
+
+Tracking how an event propagates across registers reveals how meaning is being constructed by different epistemic communities.
+
+### Semantic Axes (Not Sentiment)
+
+Instead of positive/negative sentiment, we track movement along interpretive dimensions:
+
+- **Skeptical ↔ Trusting**: critical blogs vs industry sources
+- **Technical ↔ Surface**: specs and docs vs headlines and explainers  
+- **Local ↔ Global**: regional news vs international policy bodies
+- **Emerging ↔ Established**: novel framing vs canonical interpretations
+
+---
+
+## Architecture
+
+### Layer 0: Client (Browser Extension)
+
+**Principle**: Maximum local processing, minimum data transmission.
+
+#### Data Collected (Events, Not Identity)
+
+- Page domain + normalized URL category
+- Timestamp (coarsened to 30-60s buckets)
+- Semantic fingerprint (title, meta description, extracted entities)
+- Interaction type: open/close, tab focus, dwell time bucket
+- Interaction semantics: revisit patterns, rapid switching, skim vs deep read
+
+#### Data Never Collected
+
+- Full URLs with parameters
+- Keystrokes or form inputs
+- Cross-session persistent identity
+- Raw page content
+
+#### Local Processing Pipeline
+
+```
+Raw page → Entity extraction (YAKE/TextRank)
+        → Topic sketching (lightweight biterm model)
+        → Embedding (MiniLM/E5-small via WASM)
+        → Hash + compress
+        → Transmit only: embeddings, entity hashes, topic IDs, interaction type
+```
+
+#### Trust Posture
+
+- UI panel showing last N events queued for transmission
+- Per-signal-type toggles
+- "Panic off" switch
+- Open-source, auditable codebase
+
+### Layer 1: Ingestion & Anomaly Detection
+
+**Statistical baseline and burst detection.**
+
+```
+Events → Kafka/Redpanda → ClickHouse (columnar storage)
+                       → Baseline computation (hourly/daily by semantic bucket)
+                       → Z-score / EVT anomaly flagging
+```
+
+Thresholds:
+- Minimum U (users) per window
+- Minimum D (domains) per cluster
+- Minimum Δ (deviation) from baseline
+
+### Layer 2: Semantic Clustering & Trajectories
+
+**Density-based clustering on embeddings, then flow modeling.**
+
+```
+Embeddings → HDBSCAN clustering
+          → Cluster centroids to vector DB (Qdrant/Weaviate)
+          → Temporal graph: clusters as nodes, transitions as weighted edges
+          → Markov chain / trajectory analysis
+```
+
+Outputs:
+- Cluster membership over time
+- Migration patterns (e.g., "entertainment → legal analysis")
+- Cross-domain correlation signatures
+
+### Layer 3: LLM Narrativization
+
+**Summarization and labeling only—never raw ingestion.**
+
+Input: sampled titles, hashed topic labels, cluster statistics
+
+Tasks:
+- **Naming**: short neutral labels ("AI copyright disputes", "GPU supply anxiety")
+- **Change summary**: "Compared to baseline, movement from consumer news → legal analysis, suggesting shift from awareness to rule interpretation"
+- **Phase inference**: emergence, contestation, consolidation, decay
+
+### Layer 4: Symbolic Structure (Optional/Advanced)
+
+**Event graphs for rule-based queries.**
+
+```
+Cluster → Event graph (nodes: topics, domains, intent tags; edges: temporal transitions)
+       → Query engine for patterns:
+          - "Expert concern emerging?" → mass media → specialized forums → preprints
+          - "Fragmentation?" → multiple disjoint interpretations, similar amplitude
+```
+
+This enables moving beyond trend detection toward observing collective reasoning.
+
+---
+
+## Privacy & Legitimacy Architecture
+
+### Threat Model
+
+Assume a strong attacker controlling the backend. Design so that even this attacker cannot reconstruct individual user journeys.
+
+### Structural Protections
+
+| Protection | Implementation |
+|------------|----------------|
+| No persistent user IDs | Rotating anonymous session keys |
+| Differential privacy | Noise injection on all counts |
+| Aggregation thresholds | No output for clusters < N users |
+| Secure aggregation | Multi-party computation for sensitive co-occurrence stats |
+| Data minimization | Delete raw events after clustering; retain only aggregates |
+
+### Transparency Hooks (User-Facing)
+
+Every insight displays:
+- "How many users contributed to this?"
+- "What data types were used?"
+- "Confidence level"
+- "View the cluster's semantic neighbors"
+
+### Hard-Coded Constraints
+
+- No law enforcement use
+- No individualized profiling
+- No political microtargeting
+- No sale of individual-level data
+- Public data schema
+
+---
+
+## UX Surfaces
+
+### A. Live Contextual Overlays
+
+While consuming content:
+- "People engaging with this are currently exploring..."
+- "Related concepts spiking right now"
+- "Parallel interpretations emerging in [expert/consumer/governance] registers"
+
+### B. Collective Footnotes
+
+For articles and videos:
+- Community-derived reference trails
+- Not comments—evidence of where attention flows after this content
+- Epistemic register breakdown
+
+### C. Resonance Dashboard
+
+For researchers/journalists:
+- Timeline with semantic clusters rising/falling
+- Heatmap of cross-domain correlations
+- Replay mode: scrub through an event's lifecycle
+- Epistemic health indicators:
+  - Topic fragmentation score
+  - Primary vs secondary source reliance
+  - Speed of expert engagement
+  - Persistence of outdated frames
+
+### D. Contrastive Overlays (Opt-In)
+
+If users volunteer obfuscated traits ("developer", "educator", "general"):
+- "Developers converging on protocol specs; general audience on explainers"
+- Strict aggregation thresholds; no small-group exposure
+
+---
+
+## Tech Stack
+
+| Component | Technology |
+|-----------|------------|
+| **Extension** | Manifest V3, WASM NLP (MiniLM), IndexedDB buffer |
+| **Ingestion** | Kafka / Redpanda |
+| **Event storage** | ClickHouse |
+| **Embeddings** | Qdrant / Weaviate |
+| **Processing** | Python (FastAPI + Celery) |
+| **Clustering** | HDBSCAN, scikit-learn |
+| **LLM layer** | Claude API (summarization only) |
+| **Frontend** | React + D3 for dashboards |
+
+---
+
+## Development Phases
+
+### Phase 1: Foundation (Weeks 1-4)
+
+**Goal**: Prove that correlated browsing behavior produces meaningful clusters.
+
+- [ ] Browser extension skeleton (Manifest V3)
+  - [ ] Tab open/close/focus event capture
+  - [ ] Timestamp coarsening
+  - [ ] Local keyword extraction (YAKE)
+  - [ ] UI panel showing pending events
+- [ ] Minimal backend
+  - [ ] Event ingestion endpoint
+  - [ ] ClickHouse schema for events
+  - [ ] Basic temporal windowing
+- [ ] Private alpha deployment (10-20 users)
+  - [ ] Shared event: livestream, keynote, or breaking news
+  - [ ] Manual inspection of raw event patterns
+
+**Success criteria**: Can observe correlated domain access patterns during a shared event.
+
+### Phase 2: Semantic Clustering (Weeks 5-8)
+
+**Goal**: Automatic cluster detection with meaningful boundaries.
+
+- [ ] Client-side embeddings
+  - [ ] MiniLM via WASM
+  - [ ] Embedding transmission instead of raw text
+- [ ] Server-side clustering
+  - [ ] HDBSCAN on sliding windows
+  - [ ] Cluster persistence and merging logic
+  - [ ] Cross-domain correlation detection
+- [ ] Baseline computation
+  - [ ] Historical averages by semantic bucket
+  - [ ] Z-score anomaly detection
+- [ ] Basic dashboard
+  - [ ] Timeline view of cluster activity
+  - [ ] Click-through to representative URLs
+
+**Success criteria**: Clusters form and dissolve in ways that correspond to observable real-world events.
+
+### Phase 3: Narrativization & Trajectories (Weeks 9-12)
+
+**Goal**: Human-readable insights from cluster dynamics.
+
+- [ ] LLM summarization pipeline
+  - [ ] Cluster naming
+  - [ ] Change summaries ("compared to baseline...")
+  - [ ] Phase labeling
+- [ ] Trajectory modeling
+  - [ ] Temporal graph construction
+  - [ ] Migration pattern detection
+  - [ ] Epistemic register classification
+- [ ] Enhanced dashboard
+  - [ ] Resonance event cards with (T, U, D, S, Δ)
+  - [ ] Trajectory visualization
+  - [ ] Register breakdown
+
+**Success criteria**: Non-technical users can understand "what is happening" from dashboard outputs.
+
+### Phase 4: Privacy Hardening (Weeks 13-16)
+
+**Goal**: Production-grade privacy architecture.
+
+- [ ] Differential privacy implementation
+  - [ ] Noise calibration
+  - [ ] Threshold enforcement
+- [ ] Secure aggregation exploration
+  - [ ] Evaluate MPC options for co-occurrence stats
+- [ ] Formal privacy audit
+  - [ ] External review of data flows
+  - [ ] Threat model documentation
+- [ ] Transparency features
+  - [ ] Per-insight provenance display
+  - [ ] User data export/deletion
+
+**Success criteria**: Pass external privacy review; publish threat model and data schema.
+
+### Phase 5: Public Beta & Surfaces (Weeks 17-24)
+
+**Goal**: Usable product for early adopters.
+
+- [ ] Extension polish
+  - [ ] Onboarding flow
+  - [ ] Granular controls
+  - [ ] Performance optimization
+- [ ] Live overlay prototype
+  - [ ] Browser-side rendering of contextual insights
+- [ ] Collective footnotes prototype
+  - [ ] Integration with reading mode or specific sites
+- [ ] Research dashboard
+  - [ ] Replay mode
+  - [ ] Epistemic health metrics
+  - [ ] Export for academic use
+
+**Success criteria**: 100+ users in open beta; positive feedback from journalists/researchers.
+
+### Phase 6: Advanced Features (Weeks 25+)
+
+- [ ] Symbolic query layer
+  - [ ] Event graph construction
+  - [ ] Pattern queries ("expert concern emerging?")
+- [ ] Intervention sandbox
+  - [ ] Opt-in cohort experiments
+  - [ ] Measure effect of overlays on trajectories
+- [ ] API for third-party integration
+  - [ ] Aggregate-only endpoints
+  - [ ] Rate limiting and access controls
+- [ ] Cross-community contrastive views
+  - [ ] Opt-in trait collection
+  - [ ] Comparative overlays
+
+---
+
+## Success Metrics
+
+### Technical
+
+| Metric | Target |
+|--------|--------|
+| Cluster coherence (silhouette score) | > 0.4 |
+| Latency: event → cluster assignment | < 60s |
+| False positive rate (noise clusters) | < 10% |
+| Privacy: re-identification risk | Negligible under formal analysis |
+
+### Product
+
+| Metric | Target |
+|--------|--------|
+| Daily active users (beta) | 500+ |
+| Insight utility rating | > 4/5 |
+| Researcher adoption | 10+ academic/journalism partners |
+| User trust score | > 4/5 on privacy perception |
+
+### Impact
+
+| Metric | Target |
+|--------|--------|
+| Novel event detection | Identify emerging events before mainstream coverage |
+| Epistemic health tracking | Publish monthly reports on information ecosystem |
+| Media literacy integration | Adoption by 3+ educational institutions |
+
+---
+
+## Open Questions
+
+1. **Cluster granularity**: How do we balance specificity (useful) vs. noise (too many micro-clusters)?
+
+2. **Temporal decay**: How quickly should old events age out of influence on current clusters?
+
+3. **Cross-event linking**: When does a new cluster represent a genuinely new phenomenon vs. a continuation of an earlier one?
+
+4. **Legitimacy signaling**: Beyond technical privacy, how do we build trust with skeptical users who've been burned by "privacy-preserving" products before?
+
+5. **Monetization**: Research grants? Institutional subscriptions? What models preserve the public-interest mission?
+
+6. **Adversarial robustness**: How do we detect and mitigate coordinated attempts to manipulate cluster formation?
+
+---
+
+## Naming Candidates
+
+- Resonance
+- Collective Sensorium
+- Attention Field
+- Semantic Weather
+- The Present Tense
+- Distributed Cognition Observatory (DCO)
+
+---
+
+## References
+
+- Divvi Up: Privacy-preserving telemetry architecture
+- HDBSCAN: Density-based clustering for noisy data
+- MiniLM: Lightweight sentence embeddings
+- YAKE: Unsupervised keyword extraction
+- Differential privacy: Formal framework for privacy guarantees
+
+---
+
+*This document is a living roadmap. Update as the project evolves.*
