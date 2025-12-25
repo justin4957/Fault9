@@ -1,4 +1,5 @@
 # Resonance: Collective Attention Telemetry
+
 8 network phone charger {bottle brewery narrative testing for user guided 'reality' construction}
 
 ## Vision
@@ -109,32 +110,113 @@ Thresholds:
 - Minimum D (domains) per cluster
 - Minimum Δ (deviation) from baseline
 
-### Layer 2: Semantic Clustering & Trajectories
+### Layer 2: Multi-Layer Graph Clustering
 
-**Density-based clustering on embeddings, then flow modeling.**
+**The system's validity hinges on distinguishing collective cognition from coordinated noise.**
+
+The core challenge: a spike in "Nike" searches during a basketball game is obvious. The system's value is finding *non-obvious, cross-domain semantic bridges*.
+
+#### Architecture: Temporal Knowledge Graph Distillation
 
 ```
-Embeddings → HDBSCAN clustering
-          → Cluster centroids to vector DB (Qdrant/Weaviate)
-          → Temporal graph: clusters as nodes, transitions as weighted edges
-          → Markov chain / trajectory analysis
+┌─────────────────────────────────────────────────────────────────┐
+│  LAYER 1: EVENT NODES                                           │
+│  Raw events from extensions (embedding + entities + domain)     │
+└─────────────────────────────────────────────────────────────────┘
+                              ↓
+┌─────────────────────────────────────────────────────────────────┐
+│  LAYER 2: CO-OCCURRENCE EDGES                                   │
+│  Connect events within window W1 (2 min) if cosine sim > T1     │
+│  Forms many small, dense "moment graphs"                        │
+└─────────────────────────────────────────────────────────────────┘
+                              ↓
+┌─────────────────────────────────────────────────────────────────┐
+│  LAYER 3: USER-AGNOSTIC MERGE                                   │
+│  Merge moment graphs across users within W2 (10 min)            │
+│  Community detection (Leiden/Louvain) on merged graph           │
+│  Each community = candidate semantic resonance                  │
+└─────────────────────────────────────────────────────────────────┘
+                              ↓
+┌─────────────────────────────────────────────────────────────────┐
+│  LAYER 4: CROSS-DOMAIN FILTER & AMPLIFICATION                   │
+│  Signal = f(community_size, domain_diversity, novelty_score)    │
+└─────────────────────────────────────────────────────────────────┘
 ```
 
-Outputs:
+#### Signal Scoring Function
+
+```
+Signal(cluster) = size_weight × log(U) 
+                + diversity_weight × D/D_max
+                + novelty_weight × (1 - baseline_overlap)
+                - homogeneity_penalty × referrer_concentration
+```
+
+Where:
+- **U**: unique users in cluster
+- **D**: distinct domain types (require ≥3: e.g., video, encyclopedia, e-commerce, code)
+- **baseline_overlap**: entity similarity to rolling 24hr baseline (suppress evergreen)
+- **referrer_concentration**: penalty if >70% events share single referrer
+
+#### Why Graph-Based?
+
+Graphs naturally surface **bridge concepts**. A single event might link two emerging clusters, revealing deeper synthesis—e.g., a philosophical Wikipedia page connecting a political livestream cluster to a fantasy novel cluster. These bridges are often the most valuable insights.
+
+#### Outputs
+
 - Cluster membership over time
+- Bridge nodes connecting clusters
 - Migration patterns (e.g., "entertainment → legal analysis")
 - Cross-domain correlation signatures
 
 ### Layer 3: LLM Narrativization
 
-**Summarization and labeling only—never raw ingestion.**
+**Summarization and labeling only—never raw ingestion. The LLM's one right job is narrative inference, not pattern detection.**
 
 Input: sampled titles, hashed topic labels, cluster statistics
 
-Tasks:
-- **Naming**: short neutral labels ("AI copyright disputes", "GPU supply anxiety")
-- **Change summary**: "Compared to baseline, movement from consumer news → legal analysis, suggesting shift from awareness to rule interpretation"
-- **Phase inference**: emergence, contestation, consolidation, decay
+#### Prompt Framework for Cluster Labeling
+
+```
+Context: During the time window {window}, {user_count} anonymous users 
+collectively browsed content across {domain_count} distinct types of 
+sites (e.g., video, shopping, forums).
+
+The strongest shared concepts were: {entity_list}.
+
+The top representative page titles were:
+- {title_1}
+- {title_2}
+- ...
+
+Task: Generate:
+1. A **neutral, descriptive hypothesis** for what collective activity 
+   or inquiry was likely occurring.
+2. The **most likely catalyst** (e.g., "a news event," "a viral video," 
+   "a product launch").
+3. A **"Why this matters"** statement focusing on the cross-domain 
+   pattern, not the content itself.
+
+Constraints:
+- Do not state assumptions as facts.
+- If the link is unclear, state the ambiguity.
+- Focus on the pattern of migration (e.g., "from entertainment to 
+  technical documentation").
+```
+
+#### Example Output
+
+> *"A group appears to be moving from a martial arts livestream to Chinese history pages and then to weapon replicas shopping sites, suggesting a moment where historical reference is driving consumer interest."*
+
+#### Tasks
+
+| Task | Output |
+|------|--------|
+| **Naming** | Short neutral labels ("AI copyright disputes", "GPU supply anxiety") |
+| **Change summary** | "Compared to baseline, movement from consumer news → legal analysis, suggesting shift from awareness to rule interpretation" |
+| **Phase inference** | Emergence, contestation, consolidation, decay |
+| **Catalyst hypothesis** | Most likely trigger event category |
+| **Ambiguity flagging** | Explicit uncertainty when links are unclear |
 
 ### Layer 4: Symbolic Structure (Optional/Advanced)
 
@@ -185,6 +267,79 @@ Every insight displays:
 
 ---
 
+## Failure Modes & Mitigations
+
+Critical threats to signal integrity and ethical operation:
+
+### 1. The Viral Trap
+
+**Threat**: A single influencer saying "Go look this up" creates a massive, artificial signal that mimics organic resonance.
+
+**Detection**:
+- Track referrer source homogeneity within clusters
+- Flag if >70% of cluster events originate from single referrer domain in 30-second burst
+
+**Mitigation**:
+- Label as "potentially directed" rather than organic resonance
+- Reduce signal score via `referrer_concentration` penalty
+- Surface referrer source in transparency metadata
+
+### 2. Platform Bias
+
+**Threat**: Early adopters will skew tech/Reddit, making resonance appear in niche topics that don't represent broader attention.
+
+**Detection**:
+- Track user population demographics (opt-in, aggregated)
+- Compare cluster topic distribution against external baselines (Google Trends, etc.)
+
+**Mitigation**:
+- Explicitly report **estimated cultural basin** of each signal
+- Label: "Global Internet," "Tech Twitter," "Academic Finance," etc.
+- Be transparent that perspective is limited to participating population
+
+### 3. Ghost Clusters
+
+**Threat**: Ad networks serving identical content across sites create false semantic resonance—same ad/article appears on multiple domains, looks like organic cross-domain interest.
+
+**Detection**:
+- Fingerprint common commercial content (ad copy, syndicated articles)
+- Maintain server-side blocklist of known content distribution network patterns
+
+**Mitigation**:
+- Suppress events matching known CDN/syndication fingerprints
+- Require semantic diversity beyond surface-level title matching
+- Weight original content sources higher than aggregators
+
+### 4. Weaponization Risk
+
+**Threat**: Insights like "people watching this political debate are suddenly researching gun laws" could be dangerous in wrong hands or wrong contexts.
+
+**Detection**:
+- Classify clusters by topic sensitivity (politics, health, finance, security)
+- Flag high-risk topic combinations automatically
+
+**Mitigation**:
+- **Human-review gate** for clusters involving high-risk topics before public display
+- Err on the side of silence—withhold ambiguous high-risk signals
+- No real-time feeds for sensitive categories; minimum delay for review
+- Audit log of all suppression decisions
+
+### 5. Coordination Attacks
+
+**Threat**: Bad actors intentionally create artificial resonance patterns to manipulate the system's outputs (astroturfing attention).
+
+**Detection**:
+- Statistical anomaly detection on user behavior patterns
+- Flag suspiciously synchronized event timing
+- Monitor for bot-like navigation patterns (no dwell time variance, mechanical transitions)
+
+**Mitigation**:
+- Require minimum behavioral entropy per contributing user
+- Weight long-term consistent users higher than new accounts
+- Rate-limit influence of any single session on cluster formation
+
+---
+
 ## UX Surfaces
 
 ### A. Live Contextual Overlays
@@ -229,14 +384,122 @@ If users volunteer obfuscated traits ("developer", "educator", "general"):
 | **Ingestion** | Kafka / Redpanda |
 | **Event storage** | ClickHouse |
 | **Embeddings** | Qdrant / Weaviate |
+| **Graph storage** | Neo4j / NetworkX (for smaller scale) |
 | **Processing** | Python (FastAPI + Celery) |
-| **Clustering** | HDBSCAN, scikit-learn |
+| **Clustering** | HDBSCAN, Leiden/Louvain (community detection), scikit-learn |
 | **LLM layer** | Claude API (summarization only) |
 | **Frontend** | React + D3 for dashboards |
 
 ---
 
 ## Development Phases
+
+### Phase 0: Viability Proof (Week 1)
+
+**Goal**: Prove you can detect *any* genuine, non-obvious cross-domain resonance with 5 friends.
+
+#### Extension Skeleton (2 days)
+
+```javascript
+// Manifest V3
+// Permissions: activeTab, storage, host permissions for test sites
+// Target sites: YouTube, Wikipedia, Amazon, GitHub
+
+// On tab update:
+chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
+  if (changeInfo.status === 'complete') {
+    const event = {
+      session_id: getRotatingSessionId(),
+      timestamp: Date.now(),
+      domain: new URL(tab.url).hostname,
+      title: tab.title,
+      topic_vector: extractTopicVector(tab.title, tab.url)
+    };
+    queueEvent(event);
+  }
+});
+
+// Batch send every 30s
+setInterval(() => {
+  if (eventQueue.length > 0) {
+    fetch('http://localhost:8000/events', {
+      method: 'POST',
+      body: JSON.stringify(eventQueue)
+    });
+    eventQueue = [];
+  }
+}, 30000);
+
+// Topic vector: crude TF-IDF on title + domain keywords
+function extractTopicVector(title, url) {
+  const words = tokenize(title + ' ' + url);
+  return words.filter(w => w.length > 3).slice(0, 10);
+}
+```
+
+#### Local Server (1 day)
+
+```python
+from fastapi import FastAPI
+from sklearn.cluster import DBSCAN
+from sklearn.feature_extraction.text import TfidfVectorizer
+import numpy as np
+
+app = FastAPI()
+events = []
+
+@app.post("/events")
+async def receive_events(batch: list):
+    events.extend(batch)
+    return {"status": "ok", "total": len(events)}
+
+@app.get("/clusters")
+async def get_clusters():
+    if len(events) < 10:
+        return {"clusters": [], "message": "insufficient data"}
+    
+    # Vectorize topic vectors
+    texts = [' '.join(e['topic_vector']) for e in events]
+    vectorizer = TfidfVectorizer()
+    X = vectorizer.fit_transform(texts)
+    
+    # Cluster
+    clustering = DBSCAN(eps=0.5, min_samples=3, metric='cosine')
+    labels = clustering.fit_predict(X)
+    
+    # Find cross-domain clusters
+    results = []
+    for cluster_id in set(labels):
+        if cluster_id == -1:
+            continue
+        cluster_events = [e for e, l in zip(events, labels) if l == cluster_id]
+        domains = set(e['domain'] for e in cluster_events)
+        if len(domains) >= 3:
+            results.append({
+                "id": cluster_id,
+                "size": len(cluster_events),
+                "domains": list(domains),
+                "sample_titles": [e['title'] for e in cluster_events[:5]]
+            })
+    
+    return {"clusters": results}
+```
+
+#### Coordinated Test (1 evening)
+
+1. Have all 5 participants watch the same obscure documentary clip
+2. At an unannounced time, mention a related but non-obvious concept in chat
+   - Example: if documentary is about bees, say "I wonder how hive algorithms relate to load-balancing"
+3. Do not instruct anyone what to do
+4. Monitor `/clusters` endpoint
+5. **Success**: Within 10 minutes, a cluster emerges linking:
+   - Video domain (YouTube)
+   - Wikipedia (bees, algorithms)  
+   - GitHub (load-balancing repos)
+
+**That's your first resonance. If that works, you have magic. Then rebuild properly.**
+
+---
 
 ### Phase 1: Foundation (Weeks 1-4)
 
@@ -257,25 +520,35 @@ If users volunteer obfuscated traits ("developer", "educator", "general"):
 
 **Success criteria**: Can observe correlated domain access patterns during a shared event.
 
-### Phase 2: Semantic Clustering (Weeks 5-8)
+### Phase 2: Graph Clustering (Weeks 5-8)
 
-**Goal**: Automatic cluster detection with meaningful boundaries.
+**Goal**: Multi-layer graph clustering that surfaces bridge concepts.
 
 - [ ] Client-side embeddings
   - [ ] MiniLM via WASM
   - [ ] Embedding transmission instead of raw text
-- [ ] Server-side clustering
-  - [ ] HDBSCAN on sliding windows
-  - [ ] Cluster persistence and merging logic
-  - [ ] Cross-domain correlation detection
-- [ ] Baseline computation
-  - [ ] Historical averages by semantic bucket
-  - [ ] Z-score anomaly detection
+- [ ] Graph-based clustering pipeline
+  - [ ] Event layer: timestamped nodes with embeddings
+  - [ ] Co-occurrence layer: edges for temporal proximity + semantic similarity
+  - [ ] Moment graph formation (W1 = 2min windows)
+  - [ ] User-agnostic merge across W2 = 10min windows
+  - [ ] Community detection (Leiden algorithm)
+- [ ] Signal scoring implementation
+  - [ ] Domain diversity requirement (≥3 types)
+  - [ ] Novelty score vs 24hr baseline
+  - [ ] Referrer concentration penalty (viral trap detection)
+- [ ] Bridge concept detection
+  - [ ] Identify nodes connecting multiple communities
+  - [ ] Surface cross-cluster semantic links
 - [ ] Basic dashboard
   - [ ] Timeline view of cluster activity
+  - [ ] Bridge concept highlighting
   - [ ] Click-through to representative URLs
 
-**Success criteria**: Clusters form and dissolve in ways that correspond to observable real-world events.
+**Success criteria**: 
+- Clusters form and dissolve corresponding to real-world events
+- Bridge concepts identified between related clusters
+- Viral/directed signals correctly flagged
 
 ### Phase 3: Narrativization & Trajectories (Weeks 9-12)
 
@@ -316,28 +589,38 @@ If users volunteer obfuscated traits ("developer", "educator", "general"):
 
 ### Phase 5: Public Beta & Surfaces (Weeks 17-24)
 
-**Goal**: Usable product for early adopters.
+**Goal**: Usable product for early adopters with robust signal integrity.
 
 - [ ] Extension polish
   - [ ] Onboarding flow
   - [ ] Granular controls
   - [ ] Performance optimization
+- [ ] Signal integrity features
+  - [ ] Ghost cluster suppression (CDN/syndication fingerprinting)
+  - [ ] Cultural basin labeling ("Tech Twitter", "Academic Finance", etc.)
+  - [ ] Human review gate for high-risk topic clusters
 - [ ] Live overlay prototype
   - [ ] Browser-side rendering of contextual insights
+  - [ ] "Potentially directed" labeling for viral trap signals
 - [ ] Collective footnotes prototype
   - [ ] Integration with reading mode or specific sites
+  - [ ] Bridge concept highlighting
 - [ ] Research dashboard
   - [ ] Replay mode
   - [ ] Epistemic health metrics
   - [ ] Export for academic use
 
-**Success criteria**: 100+ users in open beta; positive feedback from journalists/researchers.
+**Success criteria**: 100+ users in open beta; positive feedback from journalists/researchers; <5% false positive rate on viral trap detection.
 
 ### Phase 6: Advanced Features (Weeks 25+)
 
 - [ ] Symbolic query layer
   - [ ] Event graph construction
   - [ ] Pattern queries ("expert concern emerging?")
+- [ ] Adversarial robustness
+  - [ ] Coordination attack detection
+  - [ ] Behavioral entropy requirements
+  - [ ] Bot pattern recognition
 - [ ] Intervention sandbox
   - [ ] Opt-in cohort experiments
   - [ ] Measure effect of overlays on trajectories
@@ -356,9 +639,11 @@ If users volunteer obfuscated traits ("developer", "educator", "general"):
 
 | Metric | Target |
 |--------|--------|
-| Cluster coherence (silhouette score) | > 0.4 |
+| Cluster coherence (internal edge density) | > 0.4 |
 | Latency: event → cluster assignment | < 60s |
 | False positive rate (noise clusters) | < 10% |
+| Bridge concept detection rate | > 50% of cross-domain links surfaced |
+| Viral trap detection accuracy | > 90% |
 | Privacy: re-identification risk | Negligible under formal analysis |
 
 ### Product
@@ -398,12 +683,27 @@ If users volunteer obfuscated traits ("developer", "educator", "general"):
 
 ## Naming Candidates
 
-- Resonance
-- Collective Sensorium
+The **collective footnotes** concept is the killer feature. It's not about what people *think*, but what they *need to know* to understand the moment.
+
+**Core metaphor**: Waze for collective attention—not showing where traffic is, but showing where the mind of the network is flowing and why.
+
+### Primary Candidates
+
+| Name | Framing |
+|------|---------|
+| **Resonance** | Physics metaphor—synchronized oscillation across independent systems |
+| **Contexture** | The texture of context; woven meaning |
+| **The Footnote Engine** | What you need to know to understand this moment |
+
+### Secondary Candidates
+
+- Semantic Echo
+- Collective Sensorium  
 - Attention Field
 - Semantic Weather
 - The Present Tense
 - Distributed Cognition Observatory (DCO)
+- Resonance Notes
 
 ---
 
@@ -411,9 +711,12 @@ If users volunteer obfuscated traits ("developer", "educator", "general"):
 
 - Divvi Up: Privacy-preserving telemetry architecture
 - HDBSCAN: Density-based clustering for noisy data
+- Leiden/Louvain: Community detection in graphs
 - MiniLM: Lightweight sentence embeddings
 - YAKE: Unsupervised keyword extraction
 - Differential privacy: Formal framework for privacy guarantees
+- NetworkX: Graph analysis in Python
+- Neo4j: Graph database for production scale
 
 ---
 
