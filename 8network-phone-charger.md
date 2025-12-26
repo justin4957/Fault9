@@ -14,6 +14,8 @@ This is not a recommendation engine, social feed, or sentiment analyzer. It is a
 
 ### Resonance Event
 
+
+
 A Resonance Event is formally defined as a tuple:
 
 ```
