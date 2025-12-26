@@ -11,7 +11,8 @@ This is not a recommendation engine, social feed, or sentiment analyzer. It is a
 ---
 
 ## Core Concepts
-![private interest cars](https://github.com/user-attachments/assets/45b2d330-aa29-4388-8c56-7e88fe677e87)
+<img width="758" height="1403" alt="cars" src="https://github.com/user-attachments/assets/63265c69-bdf5-4f71-ae90-1c780d5056b9" />
+
 
 ### Resonance Event
 <img width="777" height="516" alt="Screenshot 2025-12-25 at 7 46 16 PM" src="https://github.com/user-attachments/assets/b49a2ad6-ebad-44f9-bbd5-a9b1fe01026a" />
